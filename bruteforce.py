@@ -2,33 +2,34 @@ import csv
 from itertools import combinations as itertools_combinations
 
 
-# Type hint aliases
-Stock = tuple[str, float, float]
-StockList = list[Stock]
-StockCombinations = list[StockList]
+def read_csv(file_name):
+    """Read csv file and return data
 
+    Params :
+        - file_name (str) : the name of the file
 
-def read_csv(file_name: str) -> StockList:
-    """Read csv file and return data"""
+    Returns :
+        - (list of tuple) : a list of stocks
+    """
     with open(f'data/{file_name}.csv', newline='') as file:
         csv_data = csv.reader(file, delimiter=',')
         next(csv_data, None)  # ignore header
         return [(data[0], float(data[1]), float(data[2])) for data in csv_data]
 
 
-def find_best_stocks(stock_list: StockList) -> tuple[StockList, float, float]:
+def find_best_stocks(stock_list):
     """Get and test each combination of stocks to find the best one
     
     Params : 
-        - stock_list : a stock list from a csv file
+        - stock_list (list of tuple) : a stock list from a csv file
 
     Returns :
         - a tuple that contains :
-            - the best stock list
-            - the best profits
-            - the total cost of the best stock list
+            - the best stock list (tuple)
+            - the best profits (float)
+            - the total cost of the best stock list (float)
     """
-    best_stock_list = None
+    best_stock_list = ()
     best_profits = 0.0
     for i in range(len(stock_list) + 1):
         combinations = filter(
@@ -38,24 +39,22 @@ def find_best_stocks(stock_list: StockList) -> tuple[StockList, float, float]:
         best_stock_list, best_profits = get_best_combination(
             combinations, best_stock_list, best_profits)
     return (best_stock_list, best_profits, sum(
-        [action[1] for action in best_stock_list]))
+        [stock[1] for stock in best_stock_list]))
 
 
-def get_best_combination(stock_combinations: StockCombinations,
-                         best_stock_list: StockList | None,
-                         best_profits: float) -> tuple[StockList, float]:
+def get_best_combination(stock_combinations, best_stock_list, best_profits):
     """Test each stock list from a list of stock combinations
     to find the one that will generate the best profits
 
     Params :
-        - stock_combinations : list of stock combinations
-        - best_stock_list : the last best stock list
-        - best_profits : the last best profits
+        - stock_combinations (filter) : iterator of stock combinations
+        - best_stock_list (tuple) : the last best stock list
+        - best_profits (float) : the last best profits
 
     Returns :
         - a tuple that contains :
-            - the best stocks list
-            - the best profits
+            - the best stocks list (tuple)
+            - the best profits (float)
     """
     for stock_list in stock_combinations:
         profits = sum(
@@ -67,8 +66,12 @@ def get_best_combination(stock_combinations: StockCombinations,
     return (best_stock_list, best_profits)
 
 
-def display_rersults(results: tuple[StockList, float, float]) -> None:
-    """Better display for results"""
+def display_rersults(results):
+    """Better display for results
+
+    Params :
+        - results (tuple) : the resutlts
+    """
     print()
     print('Stocks to buy :')
     print()
