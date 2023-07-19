@@ -54,13 +54,16 @@ def knap_sac_1D(max_weight, weights, items, number_of_item):
         if sack[max_weight] == sack[max_weight - weights[number_of_item - 1]] + items[number_of_item - 1][2]:
             results.append(items[number_of_item-1])
             max_weight -= weights[number_of_item-1]
-        
+            number_of_item = len(weights)  # reset number of items
+        number_of_item -= 1
+    # results.sort(key=lambda x: int(x[0].split('-')[1]), reverse=True)  # can be removed
     return best_profits, results
 
 
 def main_2D():
     stock_list = read_csv('stocks')
-    stock_list = [(stock[0], stock[1], (stock[1] * stock[2]) / 100) for stock in stock_list]
+    stock_list = [(stock[0], stock[1], (stock[1] * stock[2]) / 100)
+                  for stock in stock_list]
     max_weight = 500
     number_of_item = len(stock_list)
     weights = [int(stock[1]) for stock in stock_list]
