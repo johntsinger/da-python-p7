@@ -1,4 +1,5 @@
 import csv
+import time
 from itertools import combinations as itertools_combinations
 
 
@@ -94,4 +95,6 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+    print(time.time() - start, 'sec')
