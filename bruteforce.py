@@ -20,8 +20,8 @@ def read_csv(file_name):
 
 def find_best_stocks(stock_list):
     """Get and test each combination of stocks to find the best one
-    
-    Params : 
+
+    Params :
         - stock_list (list of tuple) : a stock list from a csv file
 
     Returns :
