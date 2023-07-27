@@ -3,6 +3,108 @@ import time
 import argparse
 
 
+class Item:
+    def __init__(self, name, weight, profit):
+        self.name = name
+        self.weight = float(weight)
+        self.profit = float(profit)
+
+    def __str__(self):
+        return f'({self.name} {self.weight} {self.profit})'
+
+    def __repr__(self):
+        return str(self)
+
+
+class Knapsack:
+    def __init__(self, items, max_weight, multiplier):
+        start = time.time()
+        self.items = items
+        self.max_weight = max_weight * multiplier
+        self.number_of_values = len(self.items)
+        self.weights = [
+            int(item.weight * multiplier) for item in self.items
+        ]
+        self.profits = [
+            (item.profit * item.weight) / 100 for item in self.items
+        ]
+        self.sack = [
+            [0 for i in range(self.max_weight + 1)]
+            for i in range(self.number_of_values + 1)
+        ]
+        self.results = []
+        self._total_cost = 0
+        print('init time : ', time.time() - start, 'sec')
+
+        start = time.time()
+        # populate sack
+        self.populate()
+        print('knapsack time : ', time.time() - start, 'sec')
+
+        start = time.time()
+        # reconstruct items
+        self.reconstruct()
+        print('reconstruct time : ', time.time() - start, 'sec')
+
+    @property
+    def total_cost(self):
+        if self.results:
+            return sum([item.weight for item in self.results])
+        print("No result !")
+
+    @property
+    def best_profits(self):
+        return self.sack[self.number_of_values][self.max_weight]
+
+    def populate(self):
+        for i in range(self.number_of_values + 1):
+            for w in range(self.max_weight + 1):
+                if i == 0 or w == 0:
+                    self.sack[i][w] = 0
+                elif self.weights[i - 1] <= w:
+                    self.sack[i][w] = max(
+                        self.profits[i - 1]
+                        + self.sack[i - 1][w - self.weights[i - 1]],
+                        self.sack[i - 1][w])
+                else:
+                    self.sack[i][w] = self.sack[i - 1][w]
+
+    def reconstruct(self):
+        number_of_values = self.number_of_values
+        max_weight = self.max_weight
+        while max_weight >= 0 and number_of_values >= 0:
+            try:
+                if self.sack[number_of_values][max_weight] == (
+                        self.sack[number_of_values - 1]
+                        [max_weight - self.weights[number_of_values - 1]]
+                        + self.profits[number_of_values - 1]):
+                    self.results.append(self.items[number_of_values - 1])
+                    max_weight -= self.weights[number_of_values - 1]
+            except IndexError:
+                pass
+            number_of_values -= 1
+
+    def display_results(self):
+        """Better display for results
+
+        Params :
+            - results (tuple) : the resutlts
+        """
+        print()
+        print('Stocks to buy :')
+        print()
+        for item in self.results:
+            print(f'{" " * 4}{item.name}'
+                  # f' {"|" if int(stock[0].split("-")[1]) >= 10 else " |"}'
+                  f' {item.weight} €'
+                  # f' {"|" if stock[1] >= 100 else " |"}'
+                  f' {item.profit} %')
+        print()
+        print(f'Cost : {self.total_cost} €')
+        print()
+        print(f'Profits : {self.best_profits} €')
+
+
 def read_csv(file_name):
     """Read csv file and return data
 
@@ -16,98 +118,22 @@ def read_csv(file_name):
         with open(f'data/{file_name}.csv', newline='') as file:
             csv_data = csv.reader(file, delimiter=',')
             next(csv_data, None)  # ignore header
-            return [
-                (data[0], float(data[1]), float(data[2]))
-                for data in csv_data
-                if float(data[1]) > 0 and float(data[2]) > 0
-            ]
+            return list(csv_data)
     except FileNotFoundError:
         print("File does not exists")
 
 
-def knap_sack_2D(max_weight, weights, values, number_of_values):
-    sack = [
-        [0 for i in range(max_weight + 1)]
-        for i in range(number_of_values + 1)
-    ]
-    for i in range(number_of_values + 1):
-        for w in range(max_weight + 1):
-            if i == 0 or w == 0:
-                sack[i][w] = 0
-            elif weights[i - 1] <= w:
-                #print(i-1, w, w-weights[i-1], weights[i-1])
-                sack[i][w] = max(
-                    values[i - 1] + sack[i - 1][w - weights[i - 1]],
-                    sack[i - 1][w]
-                )
-            else:
-                sack[i][w] = sack[i - 1][w]
-
-    return sack, sack[number_of_values][max_weight]
-
-
-def reconstruct_2D(items, sack, best_profits, max_weight, weights, values,
-                   number_of_values):
+def get_multiplier(csv_data):
+    data = [data[1] for data in csv_data]
     results = []
-    while max_weight >= 0 and number_of_values >= 0:
+    for elt in data:
         try:
-            if sack[number_of_values][max_weight] == (
-                    sack[number_of_values - 1]
-                    [max_weight - weights[number_of_values - 1]]
-                    + values[number_of_values - 1]):
-                results.append(items[number_of_values - 1])
-                max_weight -= weights[number_of_values - 1]
+            if int(elt.split('.')[1]) > 0:
+                results.append(elt[::-1].find('.'))
         except IndexError:
-            pass
-        number_of_values -= 1
-    return (results, best_profits, sum([shares[1] for shares in results]))
-
-
-def knap_sac_1D(items, max_weight, weights, values, number_of_values):
-    sack = [0 for i in range(max_weight + 1)]
-    for i in range(1, number_of_values + 1):
-        for w in range(max_weight, 0, -1):
-            if weights[i - 1] <= w:
-                sack[w] = max(
-                    sack[w], sack[w - weights[i - 1]] + values[i - 1])
-
-    # reconstruct result from knapsack
-    best_profits = sack[max_weight]
-    results = []
-    while max_weight >= 0 and number_of_values >= 0:
-        try:
-            if sack[max_weight] == (
-                    sack[max_weight - weights[number_of_values - 1]]
-                    + values[number_of_values - 1]):
-                results.append(items[number_of_values - 1])
-                max_weight -= weights[number_of_values - 1]
-                number_of_values = len(weights)  # reset number of items
-        except IndexError:
-            pass
-        number_of_values -= 1
-    #results.sort(key=lambda x: int(x[0].split('-')[1]), reverse=True)
-    return (results, best_profits, sum([shares[1] for shares in results]))
-
-
-def display_rersults(results):
-    """Better display for results
-
-    Params :
-        - results (tuple) : the resutlts
-    """
-    print()
-    print('Stocks to buy :')
-    print()
-    for stock in results[0]:
-        print(f'{" " * 4}{stock[0]}'
-              #f' {"|" if int(stock[0].split("-")[1]) >= 10 else " |"}'
-              f' {stock[1]} €'
-              #f' {"|" if stock[1] >= 100 else " |"}'
-              f' {stock[2]} %')
-    print()
-    print(f'Cost : {results[2]} €')
-    print()
-    print(f'Profits : {results[1]} €')
+            results.append(0)
+    multiplier = max(results)
+    return int(f"1{'0' * multiplier}")
 
 
 def parse_argument():
@@ -115,7 +141,7 @@ def parse_argument():
     parser.add_argument(
         "-f",
         "--file",
-        default='stocks',
+        default='shares',
         help="The name of the file to be opened"
     )
     parser.add_argument(
@@ -127,42 +153,21 @@ def parse_argument():
     return parser.parse_args()
 
 
-def main_2D():
+def main():
     args = parse_argument()
-    stock_list = read_csv(args.file)
-    max_cost = args.invest * 100
-    costs = [int(stock[1] * 100) for stock in stock_list]
-    profits = [(stock[1] * stock[2]) / 100 for stock in stock_list]
-    number_of_item = len(profits)
-    args = {'max_weight': max_cost,
-            'weights': costs,
-            'values': profits,
-            'number_of_values': number_of_item}
-    sack, best_profits = knap_sack_2D(**args)
-    results_2D = reconstruct_2D(stock_list, sack, best_profits, **args)
-    display_rersults(results_2D)
-
-
-def main_1D():
-    args = parse_argument()
-    stock_list = read_csv(args.file)
-    max_cost = args.invest * 100
-    costs = [int(stock[1] * 100) for stock in stock_list]
-    profits = [(stock[1] * stock[2]) / 100 for stock in stock_list]
-    number_of_item = len(profits)
-    args = {'max_weight': max_cost,
-            'weights': costs,
-            'values': profits,
-            'number_of_values': number_of_item}
-    results_1D = knap_sac_1D(stock_list, **args)
-    display_rersults(results_1D)
+    csv_data = read_csv(args.file)
+    multiplier = get_multiplier(csv_data)
+    max_cost = args.invest
+    items = [
+        Item(data[0], data[1], data[2])
+        for data in csv_data
+        if float(data[1]) > 0 and float(data[2]) > 0
+    ]
+    sack = Knapsack(items, max_cost, multiplier)
+    sack.display_results()
 
 
 if __name__ == '__main__':
     start = time.time()
-    main_2D()
-    print('2D : ', time.time() - start, 'sec')
-
-    start = time.time()
-    main_1D()
-    print('1D : ', time.time() - start, 'sec')
+    main()
+    print('total time : ', time.time() - start, 'sec')
