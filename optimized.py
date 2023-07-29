@@ -1,9 +1,13 @@
 import csv
 import time
 import argparse
+from decimal import Decimal
+from tqdm import trange
 
 
 class Item:
+    """Item model"""
+
     def __init__(self, name, weight, profit):
         self.name = name
         self.weight = float(weight)
@@ -17,51 +21,63 @@ class Item:
 
 
 class Knapsack:
-    def __init__(self, items, max_weight, multiplier):
-        start = time.time()
+    """Knapsack class"""
+
+    def __init__(self, items, max_weight):
         self.items = items
-        self.max_weight = max_weight * multiplier
+        self.multiplier = self.get_multiplier()
+        self.max_weight = max_weight * self.multiplier
         self.number_of_values = len(self.items)
+
+        # create list of the weights of each item multiplied by
+        # a multiplier to get an integer
         self.weights = [
-            int(item.weight * multiplier) for item in self.items
+            int(item.weight * self.multiplier) for item in self.items
         ]
+        # create a list of the profits of each item
         self.profits = [
-            (item.profit * item.weight) / 100 for item in self.items
+            (Decimal(f'{item.profit}') * Decimal(f'{item.weight}')) / 100
+            for item in self.items
         ]
+        # initialize the array for the knapsack
         self.sack = [
             [0 for i in range(self.max_weight + 1)]
             for i in range(self.number_of_values + 1)
         ]
         self.results = []
-        self._total_cost = 0
-        print('init time : ', time.time() - start, 'sec')
-
-        start = time.time()
-        # populate sack
-        self.populate()
-        print('knapsack time : ', time.time() - start, 'sec')
-
-        start = time.time()
-        # reconstruct items
-        self.reconstruct()
-        print('reconstruct time : ', time.time() - start, 'sec')
 
     @property
     def total_cost(self):
         if self.results:
-            return sum([item.weight for item in self.results])
+            return sum([Decimal(f'{item.weight}') for item in self.results])
         print("No result !")
 
     @property
     def best_profits(self):
         return self.sack[self.number_of_values][self.max_weight]
 
+    def get_multiplier(self):
+        """Get the multplier value to tranform weights
+        into int if they are floats
+        """
+        data = [str(data.weight) for data in self.items]
+        results = []
+        for elt in data:
+            try:
+                if int(elt.split('.')[1]) > 0:
+                    results.append(elt[::-1].find('.'))
+            except IndexError:
+                pass
+        if results:
+            multiplier = max(results)
+            return int(f"1{'0' * multiplier}")
+        return 1  # if no result multiply by 1 to not change result
+
     def populate(self):
-        for i in range(self.number_of_values + 1):
-            for w in range(self.max_weight + 1):
-                if i == 0 or w == 0:
-                    self.sack[i][w] = 0
-                elif self.weights[i - 1] <= w:
+        """Populate the knapsack"""
+        for i in trange(1, self.number_of_values + 1):  # trange : tqdm range
+            for w in range(1, self.max_weight + 1):
+                if self.weights[i - 1] <= w:
                     self.sack[i][w] = max(
                         self.profits[i - 1]
                         + self.sack[i - 1][w - self.weights[i - 1]],
@@ -70,6 +86,7 @@ class Knapsack:
                     self.sack[i][w] = self.sack[i - 1][w]
 
     def reconstruct(self):
+        """Reconstruct items from the knapsack"""
         number_of_values = self.number_of_values
         max_weight = self.max_weight
         while max_weight >= 0 and number_of_values >= 0:
@@ -85,11 +102,7 @@ class Knapsack:
             number_of_values -= 1
 
     def display_results(self):
-        """Better display for results
-
-        Params :
-            - results (tuple) : the resutlts
-        """
+        """Better display for results"""
         print()
         print('Stocks to buy :')
         print()
@@ -112,7 +125,7 @@ def read_csv(file_name):
         - file_name (str) : the name of the file
 
     Returns :
-        - (list of tuple) : a list of stocks
+        - (list) : a list of shares
     """
     try:
         with open(f'data/{file_name}.csv', newline='') as file:
@@ -123,20 +136,8 @@ def read_csv(file_name):
         print("File does not exists")
 
 
-def get_multiplier(csv_data):
-    data = [data[1] for data in csv_data]
-    results = []
-    for elt in data:
-        try:
-            if int(elt.split('.')[1]) > 0:
-                results.append(elt[::-1].find('.'))
-        except IndexError:
-            results.append(0)
-    multiplier = max(results)
-    return int(f"1{'0' * multiplier}")
-
-
 def parse_argument():
+    """Arguments parser"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-f",
@@ -156,15 +157,35 @@ def parse_argument():
 def main():
     args = parse_argument()
     csv_data = read_csv(args.file)
-    multiplier = get_multiplier(csv_data)
     max_cost = args.invest
     items = [
         Item(data[0], data[1], data[2])
         for data in csv_data
         if float(data[1]) > 0 and float(data[2]) > 0
     ]
-    sack = Knapsack(items, max_cost, multiplier)
+
+    # initalize knapsack
+    start = time.time()
+    sack = Knapsack(items, max_cost)
+    init_time = time.time() - start
+
+    # populate knapsack
+    start = time.time()
+    sack.populate()
+    knapsack_time = time.time() - start
+
+    # reconstruct items
+    start = time.time()
+    sack.reconstruct()
+    reconstruct_time = time.time() - start
+
     sack.display_results()
+
+    # execution time
+    print()
+    print('init time : ', init_time, 'sec')
+    print('knapsack time : ', knapsack_time, 'sec')
+    print('reconstruct time : ', reconstruct_time, 'sec')
 
 
 if __name__ == '__main__':
