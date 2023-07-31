@@ -52,7 +52,7 @@ If you don't have Python 3, please visit : https://www.python.org/downloads/ to 
   - -f --file : the name of the file to be opened without extension. (default=shares)
     - Can be : shares, dataset1, dataset2
   - -i --invest : the investment amount. (default=500)
-    - Must be an integer
+    - Must be a positive integer
 
 ### Bruteforce :
 
