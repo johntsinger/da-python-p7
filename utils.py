@@ -20,6 +20,15 @@ def read_csv(file_name):
         print("File does not exists")
 
 
+def check_positive(value):
+    """Verify if args is int value"""
+    if not value.isdigit():
+        raise argparse.ArgumentTypeError(
+            f"{value} is an invalid positive int value"
+        )
+    return int(value)
+
+
 def parse_argument():
     """Arguments parser"""
     parser = argparse.ArgumentParser()
@@ -33,6 +42,6 @@ def parse_argument():
         "-i",
         "--invest",
         default=500,
-        type=int,
+        type=check_positive,
         help="The maximum investment")
     return parser.parse_args()
