@@ -47,22 +47,22 @@ If you don't have Python 3, please visit : https://www.python.org/downloads/ to 
 
 ## Run the program :
 
-#### Arguments :
+### Arguments :
 
   - -f --file : the name of the file to be opened without extension. (default=shares)
     - Can be : shares, dataset1, dataset2
-  - -i --invest : the investisment amout. (default=500)
+  - -i --invest : the investment amount. (default=500)
     - Must be an integer
 
-#### Bruteforce :
+### Bruteforce :
 
-python bruteforce.py [-f FILE] [-i INVEST]
+    python bruteforce.py [-f FILE] [-i INVEST]
 
 **DO NOT USE with dataset1 or dataset2 this can be extremely long and saturate your RAM**
 
-#### Optimised :
+### Optimised :
 
-python optimized.py [-f FILE] [-i INVEST]
+    python optimized.py [-f FILE] [-i INVEST]
 
 ## Contact :
 Jonathan Singer - john.t.singer@gmail.com\
