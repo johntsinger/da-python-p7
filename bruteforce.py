@@ -1,24 +1,10 @@
-import csv
 import time
 from itertools import combinations as itertools_combinations
+from tqdm import trange
+from utils import parse_argument, read_csv
 
 
-def read_csv(file_name):
-    """Read csv file and return data
-
-    Params :
-        - file_name (str) : the name of the file
-
-    Returns :
-        - (list of tuple) : a list of shares
-    """
-    with open(f'data/{file_name}.csv', newline='') as file:
-        csv_data = csv.reader(file, delimiter=',')
-        next(csv_data, None)  # ignore header
-        return [(data[0], float(data[1]), float(data[2])) for data in csv_data]
-
-
-def find_best_shares(share_list):
+def find_best_shares(share_list, max_cost):
     """Get and test each combination of shares to find the best one
 
     Params :
@@ -26,21 +12,21 @@ def find_best_shares(share_list):
 
     Returns :
         - a tuple that contains :
-            - the best share list (tuple)
+            - the best shares list (tuple)
             - the best profits (float)
             - the total cost of the best share list (float)
     """
-    best_share_list = ()
+    best_shares_list = ()
     best_profits = 0.0
-    for i in range(len(share_list) + 1):
+    for i in trange(1, len(share_list) + 1):
         combinations = filter(
-            lambda results: sum([elt[1] for elt in results]) < 500,
+            lambda results: sum([elt[1] for elt in results]) < max_cost,
             itertools_combinations(share_list, i)
         )
-        best_share_list, best_profits = get_best_combination(
-            combinations, best_share_list, best_profits)
-    return (best_share_list, best_profits, sum(
-        [share[1] for share in best_share_list]))
+        best_shares_list, best_profits = get_best_combination(
+            combinations, best_shares_list, best_profits)
+    return (best_shares_list, best_profits, sum(
+        [share[1] for share in best_shares_list]))
 
 
 def get_best_combination(share_combinations, best_share_list, best_profits):
@@ -78,9 +64,7 @@ def display_rersults(results):
     print()
     for share in results[0]:
         print(f'{" " * 4}{share[0]}'
-              f' {"|" if int(share[0].split("-")[1]) >= 10 else " |"}'
               f' {share[1]} €'
-              f' {"|" if share[1] >= 100 else " |"}'
               f' {share[2]} %')
     print()
     print(f'Cost : {results[2]} €')
@@ -89,8 +73,20 @@ def display_rersults(results):
 
 
 def main():
-    shares = read_csv('shares')
-    results = find_best_shares(shares)
+    args = parse_argument()
+    if args.file in ('dataset1', 'dataset2'):
+        print()
+        print(f"WARNING : The file {args.file} contains too many data "
+              "to be used with brute force algorithm ! "
+              "This can saturate your RAM !"
+              "\nPlease use shares file instead")
+        exit()
+    csv_data = read_csv(args.file)
+    max_cost = args.invest
+    shares = [
+        (share[0], float(share[1]), float(share[2])) for share in csv_data
+    ]
+    results = find_best_shares(shares, max_cost)
     display_rersults(results)
 
 
