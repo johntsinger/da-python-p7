@@ -74,7 +74,6 @@ def display_rersults(results):
 
 def main():
     args = parse_argument()
-<<<<<<< HEAD
     if args.file in ('dataset1', 'dataset2'):
         print()
         print(f"WARNING : The file {args.file} contains too many data "
@@ -82,8 +81,6 @@ def main():
               "This can saturate your RAM !"
               "\nPlease use shares file instead")
         exit()
-=======
->>>>>>> f65946fa058cc68a15c3d757cc14f2ad8a1287e7
     csv_data = read_csv(args.file)
     max_cost = args.invest
     shares = [
