@@ -1,7 +1,7 @@
 import time
 from decimal import Decimal
 from tqdm import trange
-from utils import parse_argument, read_csv
+from utils import parse_argument, read_csv, shares_available
 
 
 class Item:
@@ -124,6 +124,8 @@ def main():
         for data in csv_data
         if float(data[1]) > 0 and float(data[2]) > 0
     ]
+
+    shares_available(len(csv_data), len(items))
 
     # initalize knapsack
     start = time.time()

@@ -17,7 +17,8 @@ def read_csv(file_name):
             next(csv_data, None)  # ignore header
             return list(csv_data)
     except FileNotFoundError:
-        print("File does not exists")
+        print(f"File '{file_name}' does not exist")
+        exit()
 
 
 def check_positive(value):
@@ -45,3 +46,8 @@ def parse_argument():
         type=check_positive,
         help="The maximum investment")
     return parser.parse_args()
+
+
+def shares_available(total, used):
+    if not total == used:
+        print(f'Found {used} / {total} valid data')
