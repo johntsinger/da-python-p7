@@ -58,7 +58,6 @@ If you don't have Python 3, please visit : https://www.python.org/downloads/ to 
 
     python bruteforce.py [-f FILE] [-i INVEST]
 
-**DO NOT USE with dataset1 or dataset2 this can be extremely long and saturate your RAM**
 
 ### Optimised :
 
