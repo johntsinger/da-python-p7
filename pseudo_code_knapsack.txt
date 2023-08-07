@@ -1,0 +1,40 @@
+Algorithme knapsack
+Variables
+    n ← nombre d’actions : ENTIER
+    investissement ← 500 : ENTIER
+    coûts[n] : LISTE DES COÛTS
+    profits[n] : LISTE DES PROFITS
+Début
+    sack[n + 1][investissement + 1] ← [[0, …, 0], …, [0, …, 0]] : LISTE 2D
+    Pour i allant de 1 jusqu’à n + 1 faire :
+        Pour w allant de 1 jusqu’à investissement + 1 faire :
+            Si coûts[w - 1] <= w :
+                sack[ i ][w] ← max(profits[i - 1] + sack[i - 1][w - weights[i - 1]],
+                                   sack[i - 1][w])
+            Sinon
+                sack[ i ][w] ← sack[i - 1][w]
+            Fin Si
+        Fin Pour
+    Fin Pour
+    meilleur_profit ← sack[n][investissement]
+Fin
+
+
+Reconstruire les items
+Variables
+    n ← nombre d'actions : ENTIER
+    investissement ← 500 : ENTIER
+    coûts[n] : LISTE DES COÛTS
+    profits[n] : LISTE DES PROFITS
+    actions[n] : LISTE DES ACTIONS
+    sack[n+1][investissement + 1] : LISTE 2D sac rempli
+    résultats[ ] ← LISTE VIDE
+Début
+    Tant Que investissement >= 0 ET n >= 0 faire :
+        Si sack[n][investissement] == sack[n - 1][investissement - coûts[n - 1]] - profits[n - 1] :
+            ajouter actions[n - 1] à résultats[ ]
+            investissement -= coûts[n - 1]
+        Fin Si
+        n -= 1
+    Fin Tant Que
+Fin

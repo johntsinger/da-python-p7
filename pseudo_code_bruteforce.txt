@@ -1,0 +1,30 @@
+Fonction obtenir_meilleur_combinaison(liste_combinaisons, meilleur_combinaison, meilleur_profit)
+Début
+    Pour chaque combinaison dans liste_combinaison faire :
+        profit ← somme ( (coût de l'action * revenue de l'action) / 100 Pour chaque action dans combinaison)
+        Si profit > meilleur_profit :
+            meilleur_profit ← profit
+            meilleur_combinaison ← combinaison
+        Fin Si
+    Fin Pour
+    Retourne (meilleur_combinaison, meilleur_profit)
+Fin
+
+
+Algorithme bruteforce
+Variables
+    n ← nombre d’actions : ENTIER
+    liste_actions[n] : LISTE DES ACTIONS
+    meilleur_combinaison[ ] : LISTE VIDE
+    meilleur_profits ← 0.0 : FLOAT
+Début
+    Pour i allant de 1 jusqu’à n + 1 faire :
+        liste_combinaisons[ ] : LISTE VIDE
+        créer toutes les combinaisons d'actions possible d'une longueur i
+        Si somme des coûts d'une combinaison < 500 :
+            ajouter combinaison à liste_combinaisons
+        Fin Si
+        meilleur_combinaison, meilleur_profit ← obtenir_meilleur_combinaison(
+                liste_combinaisons, meilleur_combinaison, meilleur_profit)
+    Fin Pour
+Fin
