@@ -8,11 +8,11 @@ Début
     sack[n + 1][investissement + 1] ← [[0, …, 0], …, [0, …, 0]] : LISTE 2D
     Pour i allant de 1 jusqu’à n + 1 faire :
         Pour w allant de 1 jusqu’à investissement + 1 faire :
-            Si coûts[w - 1] <= w :
-                sack[ i ][w] ← max(profits[i - 1] + sack[i - 1][w - weights[i - 1]],
+            Si coûts[i - 1] <= w :
+                sack[i][w] ← max(profits[i - 1] + sack[i - 1][w - weights[i - 1]],
                                    sack[i - 1][w])
             Sinon
-                sack[ i ][w] ← sack[i - 1][w]
+                sack[i][w] ← sack[i - 1][w]
             Fin Si
         Fin Pour
     Fin Pour
